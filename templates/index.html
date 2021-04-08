@@ -27,11 +27,13 @@
   <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/canvas/sigma.canvas.edges.def.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/canvas/sigma.canvas.edges.curve.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/canvas/sigma.canvas.edges.arrow.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/canvas/sigma.canvas.edges.curvedArrow.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/canvas/sigma.canvas.edges.curvedArrow.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/canvas/sigma.canvas.edgehovers.def.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/canvas/sigma.canvas.edgehovers.curve.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/canvas/sigma.canvas.edgehovers.arrow.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/canvas/sigma.canvas.edgehovers.curvedArrow.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/canvas/sigma.canvas.edgehovers.curvedArrow.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/canvas/sigma.canvas.extremities.def.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/middlewares/sigma.middlewares.rescale.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/middlewares/sigma.middlewares.copy.js"></script>
@@ -40,15 +42,22 @@
   <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/misc/sigma.misc.bindDOMEvents.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/misc/sigma.misc.drawHovers.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/plugins/sigma.renderers.edgeLabels/settings.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/plugins/sigma.renderers.edgeLabels/sigma.canvas.edges.labels.def.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/plugins/sigma.renderers.edgeLabels/sigma.canvas.edges.labels.curve.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/plugins/sigma.renderers.edgeLabels/sigma.canvas.edges.labels.curvedArrow.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/plugins/sigma.renderers.edgeLabels/sigma.canvas.edges.labels.def.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/plugins/sigma.renderers.edgeLabels/sigma.canvas.edges.labels.curve.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/plugins/sigma.renderers.edgeLabels/sigma.canvas.edges.labels.curvedArrow.js"></script>
   <!-- Sigma plugins -->
   <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/plugins/sigma.layout.forceAtlas2/supervisor.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/plugins/sigma.layout.forceAtlas2/worker.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/plugins/sigma.plugins.relativeSize/sigma.plugins.relativeSize.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/plugins/sigma.plugins.relativeSize/sigma.plugins.relativeSize.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/plugins/sigma.renderers.customShapes/shape-library.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/plugins/sigma.renderers.customShapes/sigma.renderers.customShapes.js"></script>
   <!--CSS-->
-  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="../static/style.css">
   <!--jquery-->
   <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
 </head>
@@ -63,19 +72,23 @@
       </div>
     </form>
     <div style="padding-top: 18px;">
-      <span>Tainted Transactions<div class="dot" style="background-color: #000000;"></div></span>
-      <span>Input/Output Transactions<div class="dot" style="background-color: #EE651D;"></div>
-    </div></span>
-    <span>UTXOs<div class="dot" style="background-color: #0000FF;"></div></span>
-
-
-  </div>
+      <span>Inspected Transaction<div class="dot" style="background-color: #ff4500;"></div></span>
+      <span>Input/Output Transactions<div class="dot" style="background-color: #EE651D;"></div></span>
+      <span>UTXOs<div class="dot" style="background-color: #0000FF;"></div></span>
+    </div>
+    <div class="arrow" style="padding-top: 18px;">
+      Tainted Path
+      <div class="line"></div>
+      <div class="point"></div>
+    </div>
   </div>
   <div id='sigma-container'></div>
   <div style="padding-top: 18px;" id='details'></div>
 </body>
 
 <script>
+  sigma.utils.pkg('sigma.canvas.nodes');
+  
   var blacklist = [], edges = 0, nodeList = [];
 
   var s = new sigma(
@@ -106,11 +119,11 @@
 
   $("#submit").click(function (e) {
     e.preventDefault();
-    
+
     var txn_hash = document.getElementById('txn').value;
     console.log(txn_hash);
     // document.getElementById('txn').value = "";
-    
+
     s.graph.clear();
     s.graph.read({
       nodes: [],
@@ -119,7 +132,7 @@
     blacklist = [];
     edges = 0;
     nodeList = [];
-    
+
     extendGraph(txn_hash);
   });
 
@@ -137,7 +150,7 @@
       var txn_outputs = txn["outputs"];
       for (const tx_input of txn_inputs) {
         var nodeId = tx_input["prev_tx_hash"];
-        if(tx_input["sender_address"] == "COINBASE") {
+        if (tx_input["sender_address"] == "COINBASE") {
           nodeId = "COINBASE: " + txn["hash"];
         }
         if (nodeList.indexOf(nodeId) == -1) {
@@ -150,10 +163,10 @@
       for (var j = 0; j < txn_outputs.length; j++) {
         const tx_output = txn_outputs[j];
         var nodeId = tx_output["next_tx_hash"];
-        if(tx_output["next_tx_hash"] == "") { // UTXO
+        if (tx_output["next_tx_hash"] == "") { // UTXO
           nodeId = "UTXO " + (j + 1) + ": " + txn["hash"];
         }
-        if(nodeList.indexOf(nodeId) == -1) {
+        if (nodeList.indexOf(nodeId) == -1) {
           nodeList.push(nodeId);
           graph.nodes.push({ id: nodeId });
           graph.edges.push({ source: txn["hash"], target: nodeId, amount: tx_output["amount"], address: tx_output["receiver_address"] });
@@ -193,9 +206,9 @@
     }
 
     var l = nodeList.length;
-    
+
     var newGraphData = txns_to_new_graph_using_nodelist(dump["txns"]);
-    
+
     if (nodeList.length == l) {
       // no new nodes
       return;
@@ -235,14 +248,14 @@
 
   function getEdge(edgeData, id) {
     return {
-        id: id,
-        label: '' + edgeData["amount"],
-        source: edgeData["source"],
-        target: edgeData["target"],
-        color: '#202020',
-        type: 'arrow',
-        address: edgeData["address"],
-      }
+      id: id,
+      label: '' + edgeData["amount"],
+      source: edgeData["source"],
+      target: edgeData["target"],
+      color: '#202020',
+      type: 'arrow',
+      address: edgeData["address"],
+    }
   }
 
   s.bind('clickNode doubleClickNode rightClickNode', function (e) {

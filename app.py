@@ -1,9 +1,10 @@
 import sqlite3
-from flask import g, Flask, jsonify
+from flask import g, Flask, jsonify, render_template
 from flask_cors import CORS
 from functools import lru_cache
 import ast
 
+# DATABASE = '/home/teh_devs/bitcoinspy/tx.db'
 DATABASE = 'tx.db'
 
 TX_COLS = ['tx_val', 'n_inputs', 'n_outputs', 'block_height', 'is_coinbase']
@@ -195,6 +196,10 @@ def data_from_tx_array(tx_array):
 
 app = Flask(__name__)
 CORS(app)
+
+@app.route('/')
+def main_view():
+    return render_template('index.html')
 
 @app.route('/tx_data/<hash>')
 def tx_data_route(hash):
