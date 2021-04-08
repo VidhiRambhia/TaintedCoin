@@ -1,0 +1,477 @@
+<html>
+  <head>
+    <title>SigmaJS example</title>
+    <!-- Sigma core -->
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/sigma.core.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/conrad.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/utils/sigma.utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/utils/sigma.polyfills.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/sigma.settings.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/classes/sigma.classes.dispatcher.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/classes/sigma.classes.configurable.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/classes/sigma.classes.graph.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/classes/sigma.classes.camera.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/classes/sigma.classes.quad.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/classes/sigma.classes.edgequad.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/captors/sigma.captors.mouse.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/captors/sigma.captors.touch.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/sigma.renderers.canvas.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/sigma.renderers.webgl.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/sigma.renderers.svg.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/sigma.renderers.def.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/canvas/sigma.canvas.labels.def.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/canvas/sigma.canvas.hovers.def.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/canvas/sigma.canvas.nodes.def.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/canvas/sigma.canvas.edges.def.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/canvas/sigma.canvas.edges.curve.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/canvas/sigma.canvas.edges.arrow.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/canvas/sigma.canvas.edges.curvedArrow.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/canvas/sigma.canvas.edgehovers.def.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/canvas/sigma.canvas.edgehovers.curve.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/canvas/sigma.canvas.edgehovers.arrow.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/canvas/sigma.canvas.edgehovers.curvedArrow.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/canvas/sigma.canvas.extremities.def.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/middlewares/sigma.middlewares.rescale.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/middlewares/sigma.middlewares.copy.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/misc/sigma.misc.animation.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/misc/sigma.misc.bindEvents.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/misc/sigma.misc.bindDOMEvents.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/misc/sigma.misc.drawHovers.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/plugins/sigma.renderers.edgeLabels/settings.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/plugins/sigma.renderers.edgeLabels/sigma.canvas.edges.labels.def.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/plugins/sigma.renderers.edgeLabels/sigma.canvas.edges.labels.curve.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/plugins/sigma.renderers.edgeLabels/sigma.canvas.edges.labels.curvedArrow.js"></script>
+    <!-- Sigma plugins -->
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/plugins/sigma.layout.forceAtlas2/supervisor.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/plugins/sigma.layout.forceAtlas2/worker.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/plugins/sigma.plugins.relativeSize/sigma.plugins.relativeSize.js"></script>
+    <!--CSS-->
+    <link rel="stylesheet" href="./style.css">
+    <!--jquery-->
+    <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+  </head>
+  <body>
+    <div style="width:15%;float:right;text-align:left;padding: 12px 18px;">
+        <form id="form"> 
+            <label for="txn">Tx Hash:</label><br>
+            <input type="text" id="txn" name="txn"><br>
+            <div style="padding-top: 18px;">
+                <input  type="submit" id="submit" name="submit"><br>
+            </div>
+        </form>
+        <div style="padding-top: 18px;">
+          <span>Tainted Transactions<div class="dot" style="background-color: #000000;"></div></span>
+          <span>Input/Output Transactions<div class="dot" style="background-color: #EE651D;"></div></div></span>
+          <span>UTXOs<div class="dot" style="background-color: #0000FF;"></div></span> 
+            
+            
+        </div>
+    </div>
+    <div id='sigma-container'></div>
+    <div style="padding-top: 18px;" id='details'></div>
+  </body>
+
+
+<script>
+// Random function that follows a normal distributino
+function randon_bm() {
+    var u = 0, v = 0;
+    while(u === 0) u = Math.random(); //Converting [0,1) to (0,1)
+    while(v === 0) v = Math.random();
+    let num = Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
+    num = num / 10.0 + 0.5; // Translate to 0 -> 1
+    return Math.max(Math.min(num, 1), 0); // cap between 0 and 1
+}
+
+var data,dump,blacklist,s,nodes=0,edges=0,graphSigma;
+
+s = new sigma(
+          {
+            renderer: {
+              container: document.getElementById('sigma-container'),
+              type: 'canvas',
+            },
+            settings: {
+              edgeLabelSize: 'proportional',
+              drawEdgeLabels: false,
+              minArrowSize: 10,
+              labelThreshold: 100,
+              borderSize: 2,
+              outerBorderSize: 3,
+              defaultNodeOuterBorderColor: 'rgb(236, 81, 72)',
+              enableEdgeHovering: true,
+              edgeHoverHighlightNodes: 'circle',
+              sideMargin: 1,
+              edgeHoverColor: 'edge',
+              defaultEdgeHoverColor: '#fff',
+              edgeHoverSizeRatio: 1,
+              edgeHoverExtremities: true,
+            
+            }
+          });
+
+
+  $("#submit").click(function(e){
+    e.preventDefault();
+    s.graph.clear();
+    graphSigma = [];
+    var tempDump;
+    console.log(txn);
+    txn = document.getElementById('txn').value; 
+    document.getElementById('txn').value = "";     
+        $.ajax({
+            url: "http://127.0.0.1:5000/tx/"+txn,
+            async: false,
+            dataType: 'json',
+            success: function(d) {
+                tempDump = d;
+
+            }
+        });
+      // Data 
+      if(tempDump != undefined)
+      {
+        dump = tempDump;
+        data = dump["txns"];
+        blacklist = dump["blacklist"];
+        nodeList = [];
+        var graph = fetchData(data,nodeList);
+        console.log("First")
+        console.log(nodeList)
+        graphSigma = buildGraph(graph); 
+      }
+      else{
+        alert("Txn Data Not Found!")
+      }
+
+  });
+blackNodes = [];
+function fetchData(data,nodelist)
+{
+  var graph = {
+  nodes: [],
+  edges: []
+  };
+ 
+  for(i=0;i<data.length;i++)
+  {
+    
+    if(nodeList.indexOf(data[i]["hash"]) == -1) {
+      nodeList.push(data[i]["hash"]); 
+      graph.nodes.push({id:data[i]["hash"]});    
+    }
+
+    if(data[i]["inputs"].length == 0)
+        {
+          nodeList.push("COINBASE: " + data[i]["hash"]); 
+          graph.nodes.push({id:"COINBASE: " + data[i]["hash"]}); 
+          graph.edges.push({source:"COINBASE: " + data[i]["hash"],target:data[i]["hash"]});
+        }
+        else
+        {
+          for(j=0;j<data[i]["inputs"].length;j++)
+          {
+            if(data[i]["inputs"][j]["prev_tx_hash"] == "" || nodeList.indexOf(data[i]["inputs"][j]["prev_tx_hash"]) == -1) {
+                nodeList.push(data[i]["inputs"][j]["prev_tx_hash"]); 
+                graph.nodes.push({id:data[i]["inputs"][j]["prev_tx_hash"]}); 
+                graph.edges.push({source:data[i]["inputs"][j]["prev_tx_hash"],target:data[i]["hash"], amount:data[i]["outputs"][j]["amount"] , address:data[i]["outputs"][j]["sender_address"]}); 
+                if(blacklist.indexOf(data[i]["outputs"][j]["sender_address"]) >= 0)
+                {
+                  if(blackNodes.indexOf(data[i]["inputs"][j]["prev_tx_hash"]) == -1)
+                  {
+                    blackNodes.push(data[i]["inputs"][j]["prev_tx_hash"])
+                  }
+                }
+            } 
+          }
+        }
+        
+
+    for(j=0;j<data[i]["outputs"].length;j++)
+    {
+      if( data[i]["outputs"][j]["next_tx_hash"] == "" || nodeList.indexOf(data[i]["outputs"][j]["next_tx_hash"]) == -1) {
+        if(data[i]["outputs"][j]["next_tx_hash"] == "")
+        {
+          nodeList.push("UTXO " + (j+1) + ": " + data[i]["hash"]); 
+          graph.nodes.push({id:"UTXO " + (j+1) + ": " + data[i]["hash"]}); 
+          graph.edges.push({source:data[i]["hash"],target:"UTXO " + (j+1) + ": " + data[i]["hash"],amount:data[i]["outputs"][j]["amount"]});
+        }
+        else{
+          nodeList.push(data[i]["outputs"][j]["next_tx_hash"]); 
+
+          graph.nodes.push({id:data[i]["outputs"][j]["next_tx_hash"]});
+
+          graph.edges.push({source:data[i]["hash"],target:data[i]["outputs"][j]["next_tx_hash"],amount:data[i]["outputs"][j]["amount"], address:data[i]["outputs"][j]["receiver_address"]});
+        }
+        if(blacklist.indexOf(data[i]["outputs"][j]["receiver_address"]) >= 0)
+        {
+          if(blackNodes.indexOf(data[i]["hash"]) == -1)
+          {
+            blackNodes.push(data[i]["hash"])
+          }
+          
+        }
+  
+      } 
+    }
+    
+  }
+
+console.log(nodeList)
+console.log(graph.nodes)
+console.log(graph.edges)
+console.log("123")
+console.log(blackNodes)
+
+return graph;
+
+}
+
+
+
+function nodeColor(nodeName)
+{
+
+  if(blackNodes[0]===nodeName || (blackNodes[1] && blacknodes[1]===nodeName))
+       return "#000000";
+
+  if (nodeName[0] == "U")
+  {
+    return 	"#0000FF";
+  }
+  else if(nodeName[0] == "C")
+  {
+    return 	"#FFFF00";
+  }
+  else return "#EE651D"
+}
+
+function extendGraph(txn){
+
+    var dump,data;  
+    $.ajax({
+            url: "http://127.0.0.1:5000/tx/"+txn,
+            async: false,
+            dataType: 'json',
+            success: function(d) {
+                dump = d;
+            }
+        });
+    data = dump["txns"];
+    
+    // populate
+    
+    var graph = {
+    nodes: [],
+    edges: []
+    };
+    var l = nodeList.length;
+   
+    for(i=0;i<data.length;i++)
+      {
+        
+        if(nodeList.indexOf(data[i]["hash"]) == -1) {
+          nodeList.push(data[i]["hash"]); 
+          graph.nodes.push({id:data[i]["hash"]}); 
+          console.log("123") ;
+        }
+        if(data[i]["inputs"].length == 0 && nodeList.indexOf("COINBASE: " + data[i]["hash"]) == -1)
+        {
+          nodeList.push("COINBASE: " + data[i]["hash"]); 
+          graph.nodes.push({id:"COINBASE: " + data[i]["hash"]}); 
+          graph.edges.push({source:"COINBASE: " + data[i]["hash"],target:data[i]["hash"]});
+        }
+        else
+        {
+          for(j=0;j<data[i]["inputs"].length;j++)
+          {
+            if(data[i]["inputs"][j]["prev_tx_hash"] == "" || nodeList.indexOf(data[i]["inputs"][j]["prev_tx_hash"]) == -1) {
+                nodeList.push(data[i]["inputs"][j]["prev_tx_hash"]); 
+                graph.nodes.push({id:data[i]["inputs"][j]["prev_tx_hash"]}); 
+                graph.edges.push({source:data[i]["inputs"][j]["prev_tx_hash"],target:data[i]["hash"], amount:data[i]["outputs"][j]["amount"] , address:data[i]["outputs"][j]["sender_address"]}); 
+            
+            } 
+          }
+        }
+        if(blacklist.indexOf(data[i]["outputs"][j]["sender_address"]) >= 0)
+                {
+                  if(blackNodes.indexOf(data[i]["inputs"][j]["prev_tx_hash"]) == -1)
+                  {
+                    blackNodes.push(data[i]["inputs"][j]["prev_tx_hash"])
+                  }
+                }
+
+
+        for(j=0;j<data[i]["outputs"].length;j++)
+        {
+          if( data[i]["outputs"][j]["next_tx_hash"] == "" || nodeList.indexOf(data[i]["outputs"][j]["next_tx_hash"]) == -1) {
+            if(data[i]["outputs"][j]["next_tx_hash"] == "" && nodeList.indexOf("UTXO " + (j+1) + ": " + data[i]["hash"]) == -1)
+            {
+              nodeList.push("UTXO " + (j+1) + ": " + data[i]["hash"]); 
+              graph.nodes.push({id:"UTXO " + (j+1) + ": " + data[i]["hash"]});              
+              graph.edges.push({source:data[i]["hash"],target:"UTXO " + (j+1) + ": " + data[i]["hash"],amount:data[i]["outputs"][j]["amount"]});
+              console.log("456") ;
+            }
+            else if(data[i]["outputs"][j]["next_tx_hash"] != "" && nodeList.indexOf(data[i]["outputs"][j]["next_tx_hash"]) == -1){
+              nodeList.push(data[i]["outputs"][j]["next_tx_hash"]); 
+              graph.nodes.push({id:data[i]["outputs"][j]["next_tx_hash"]}); 
+              graph.edges.push({source:data[i]["hash"],target:data[i]["outputs"][j]["next_tx_hash"],amount:data[i]["outputs"][j]["amount"], address:data[i]["outputs"][j]["receiver_address"]});
+              console.log("789") ;
+            }
+            if(blacklist.indexOf(data[i]["outputs"][j]["receiver_address"]) >= 0)
+              {
+                if(blackNodes.indexOf(data[i]["hash"]) == -1)
+                {
+                  blackNodes.push(data[i]["hash"])
+                }
+                
+              }
+      
+          } 
+        }
+        
+      }
+    console.log(blacklist);
+    if(nodeList.length==l)return;
+
+    
+    blacklist = blacklist.concat(dump["blacklist"]);
+    console.log(blacklist);
+    console.log("Hi")
+    
+    console.log(graph.nodes)
+    
+    var nbNode = graph.nodes.length;
+    var nbEdge = graph.edges.length;
+    var radius = 10;
+
+    for (i = 0; i < nbNode; i++)
+    {
+      x_coord = Math.random() * 2 * radius - radius;
+      ylim = Math.sqrt(radius * radius - x * x);
+      y_coord = Math.random() * 2 * ylim - ylim;
+
+      s.graph.addNode({ 
+        id:  graph.nodes[i]["id"],
+        label: 'TXN ' + graph.nodes[i]["id"] ,
+        x: x_coord,
+        y: y_coord,
+        size: 30,
+        color: nodeColor(graph.nodes[i]["id"])
+      });
+    }
+
+    for (i = 0; i < nbEdge; i++)
+      s.graph.addEdge({ 
+        id: i+edges, 
+        label: '' + graph.edges[i]["amount"],
+        source: graph.edges[i]["source"], 
+        target: graph.edges[i]["target"], 
+        color: '#202020',
+        type: 'arrow',
+      });
+
+    console.log(graphSigma.nodes)
+    console.log(graphSigma.edges)
+    //setTimeout(function(){s.refresh();},1000)
+    //s.graph.read(graphSigma);
+    //sigma.plugins.relativeSize(s, 10);
+    s.refresh();
+    s.startForceAtlas2();
+    window.setTimeout(function() {s.killForceAtlas2()}, 1000);
+  
+}
+
+
+function buildGraph(graph){
+var graphSigma = {
+  nodes: [],
+  edges: []
+};
+
+var nbNode = graph.nodes.length;
+var nbEdge = graph.edges.length;
+
+nodes = nbNode;
+edges = nbEdge;
+
+var radius = 10;
+x = Math.random() * 2 * radius - radius;
+ylim = Math.sqrt(radius * radius - x * x);
+y = Math.random() * 2 * ylim - ylim;
+
+graphSigma.nodes.push({ 
+    id:  graph.nodes[0]["id"],
+    label: 'TXN ' + graph.nodes[0]["id"],
+    x: 0,
+    y: 0,
+    size: 30,
+    color: '#EE651D'
+  });
+  
+for (i = 1; i < nbNode; i++)
+{
+  x_coord = Math.random() * 2 * radius - radius;
+  ylim = Math.sqrt(radius * radius - x * x);
+  y_coord = Math.random() * 2 * ylim - ylim;
+  graphSigma.nodes.push({ 
+    id:  graph.nodes[i]["id"],
+    label: 'TXN ' + graph.nodes[i]["id"] ,
+    x: x_coord,
+    y: y_coord,
+    size: 30,
+    color: nodeColor(graph.nodes[i]["id"])
+  });
+}
+
+for (i = 0; i < nbEdge; i++)
+  graphSigma.edges.push({ 
+    id: i, 
+    label: '' + graph.edges[i]["amount"],
+    source: graph.edges[i]["source"], 
+    target: graph.edges[i]["target"], 
+    color: '#202020',
+    type: 'arrow',
+    address: graph.edges[i]["address"]
+  });
+
+
+
+console.log(graphSigma.nodes)
+console.log(graphSigma.edges)
+s.graph.read(graphSigma);
+//sigma.plugins.relativeSize(s, 10);
+s.refresh();
+s.startForceAtlas2();
+window.setTimeout(function() {s.killForceAtlas2()}, 1000);
+
+return graphSigma;
+};
+
+
+// Initialise sigma:
+
+
+s.bind('clickNode doubleClickNode rightClickNode', function(e) {
+    console.log(e.data.node.id, e.type, e.data.node.label, e.data.captor);
+    if(e.data.node.color != "#0000FF") {
+      extendGraph(e.data.node.id);
+    }
+});
+
+s.bind('overNode', function (e) {
+      var label = e.data.node.label;
+      //console.log(label)
+      data = "Fees: 19292<br>Block Height: 123"
+      document.getElementById('details').innerHTML=data;  
+
+});
+
+s.bind('overEdge', function (e) {
+s.settings('drawEdgeLabels', true)
+})
+
+
+ 
+</script>
+</html>
