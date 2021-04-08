@@ -76,7 +76,7 @@
 </body>
 
 <script>
-  var txns, dump, blacklist, nodes = 0, edges = 0, graphSigma; // txns = Transaction list, dump = json dump
+  var blacklist = [], edges = 0, nodeList = [];
 
   var s = new sigma(
     {
@@ -107,27 +107,27 @@
   $("#submit").click(function (e) {
     e.preventDefault();
     
-    s.graph.clear();
-    graphSigma = [];
-    
-    var txn = document.getElementById('txn').value;
-    console.log(txn);
+    var txn_hash = document.getElementById('txn').value;
+    console.log(txn_hash);
     // document.getElementById('txn').value = "";
-    var tempDump = getData(txn);
-    if (tempDump != undefined) {
-      dump = tempDump;
-      txns = dump["txns"];
-      blacklist = dump["blacklist"];
-      nodeList = [];
-      var graph = fetchData(txns, nodeList);
-      graphSigma = buildGraph(graph);
-    }
-    else {
-      alert("Txn Data Not Found!")
-    }
+    
+    s.graph.clear();
+    s.graph.read({
+      nodes: [],
+      edges: []
+    });
+    blacklist = [];
+    edges = 0;
+    nodeList = [];
+    
+    extendGraph(txn_hash);
   });
 
-  function update(txns, nodeList, graph) {
+  function txns_to_new_graph_using_nodelist(txns) {
+    var graph = {
+      nodes: [],
+      edges: []
+    };
     for (const txn of txns) {
       if (nodeList.indexOf(txn["hash"]) == -1) {
         nodeList.push(txn["hash"]);
@@ -160,14 +160,6 @@
         }
       }
     }
-  }
-
-  function fetchData(txns, nodelist) {
-    var graph = {
-      nodes: [],
-      edges: []
-    };
-    update(txns, nodeList, graph);
     return graph;
   }
 
@@ -194,36 +186,36 @@
     return dump;
   }
 
-  function extendGraph(txn) {
-    var dump = getData(txn);
+  function extendGraph(txn_hash) {
+    var dump = getData(txn_hash);
     if (dump == undefined) {
       return;
     }
-    var txns = dump["txns"];
 
-    var graph = {
-      nodes: [],
-      edges: []
-    };
     var l = nodeList.length;
     
-    update(txns, nodeList, graph);
+    var newGraphData = txns_to_new_graph_using_nodelist(dump["txns"]);
     
-    if (nodeList.length == l) return;
+    if (nodeList.length == l) {
+      // no new nodes
+      return;
+    }
 
     blacklist = blacklist.concat(dump["blacklist"]);
 
-    for (i = 0; i < graph.nodes.length; i++) {
-      s.graph.addNode(getNode(graph.nodes[i]));
+    for (i = 0; i < newGraphData.nodes.length; i++) {
+      s.graph.addNode(getNode(newGraphData.nodes[i]));
     }
 
-    for (i = 0; i < graph.edges.length; i++) {
-      s.graph.addEdge(getEdge(graph.edges[i], i + edges));
+    for (i = 0; i < newGraphData.edges.length; i++) {
+      s.graph.addEdge(getEdge(newGraphData.edges[i], i + edges));
     }
 
     s.refresh();
     s.startForceAtlas2();
     window.setTimeout(function () { s.killForceAtlas2() }, 1000);
+
+    edges = edges + newGraphData.edges.length;
   }
 
   function getNode(nodeData) {
@@ -252,32 +244,6 @@
         address: edgeData["address"],
       }
   }
-
-  function buildGraph(graph) {
-    var graphSigma = {
-      nodes: [],
-      edges: []
-    };
-
-    nodes = graph.nodes.length;
-    edges = graph.edges.length;
-
-    for (i = 0; i < graph.nodes.length; i++) {
-      graphSigma.nodes.push(getNode(graph.nodes[i]));
-    }
-
-    for (i = 0; i < graph.edges.length; i++) {
-      graphSigma.edges.push(getEdge(graph.edges[i], i));
-    }
-
-    s.graph.read(graphSigma);
-    // sigma.plugins.relativeSize(s, 10);
-    s.refresh();
-    s.startForceAtlas2();
-    window.setTimeout(function () { s.killForceAtlas2() }, 1000);
-
-    return graphSigma;
-  };
 
   s.bind('clickNode doubleClickNode rightClickNode', function (e) {
     console.log(e.data.node.id, e.type, e.data.node.label, e.data.captor);
