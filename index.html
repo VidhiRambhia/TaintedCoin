@@ -83,7 +83,7 @@ function randon_bm() {
     return Math.max(Math.min(num, 1), 0); // cap between 0 and 1
 }
 
-var data,dump,blacklist,s,nodes=0,edges=0,graphSigma;
+var data,dump,blacklist,s,nodes=0,edges=0,graphSigma; // data = Transaction list, dump = json dump
 
 s = new sigma(
           {
@@ -175,13 +175,6 @@ function fetchData(data,nodelist)
                 nodeList.push(data[i]["inputs"][j]["prev_tx_hash"]); 
                 graph.nodes.push({id:data[i]["inputs"][j]["prev_tx_hash"]}); 
                 graph.edges.push({source:data[i]["inputs"][j]["prev_tx_hash"],target:data[i]["hash"], amount:data[i]["outputs"][j]["amount"] , address:data[i]["outputs"][j]["sender_address"]}); 
-                if(blacklist.indexOf(data[i]["outputs"][j]["sender_address"]) >= 0)
-                {
-                  if(blackNodes.indexOf(data[i]["inputs"][j]["prev_tx_hash"]) == -1)
-                  {
-                    blackNodes.push(data[i]["inputs"][j]["prev_tx_hash"])
-                  }
-                }
             } 
           }
         }
@@ -198,30 +191,15 @@ function fetchData(data,nodelist)
         }
         else{
           nodeList.push(data[i]["outputs"][j]["next_tx_hash"]); 
-
           graph.nodes.push({id:data[i]["outputs"][j]["next_tx_hash"]});
-
           graph.edges.push({source:data[i]["hash"],target:data[i]["outputs"][j]["next_tx_hash"],amount:data[i]["outputs"][j]["amount"], address:data[i]["outputs"][j]["receiver_address"]});
         }
-        if(blacklist.indexOf(data[i]["outputs"][j]["receiver_address"]) >= 0)
-        {
-          if(blackNodes.indexOf(data[i]["hash"]) == -1)
-          {
-            blackNodes.push(data[i]["hash"])
-          }
-          
-        }
+
   
       } 
     }
     
   }
-
-console.log(nodeList)
-console.log(graph.nodes)
-console.log(graph.edges)
-console.log("123")
-console.log(blackNodes)
 
 return graph;
 
@@ -231,9 +209,6 @@ return graph;
 
 function nodeColor(nodeName)
 {
-
-  if(blackNodes[0]===nodeName || (blackNodes[1] && blacknodes[1]===nodeName))
-       return "#000000";
 
   if (nodeName[0] == "U")
   {
@@ -293,13 +268,6 @@ function extendGraph(txn){
             } 
           }
         }
-        if(blacklist.indexOf(data[i]["outputs"][j]["sender_address"]) >= 0)
-                {
-                  if(blackNodes.indexOf(data[i]["inputs"][j]["prev_tx_hash"]) == -1)
-                  {
-                    blackNodes.push(data[i]["inputs"][j]["prev_tx_hash"])
-                  }
-                }
 
 
         for(j=0;j<data[i]["outputs"].length;j++)
@@ -310,36 +278,26 @@ function extendGraph(txn){
               nodeList.push("UTXO " + (j+1) + ": " + data[i]["hash"]); 
               graph.nodes.push({id:"UTXO " + (j+1) + ": " + data[i]["hash"]});              
               graph.edges.push({source:data[i]["hash"],target:"UTXO " + (j+1) + ": " + data[i]["hash"],amount:data[i]["outputs"][j]["amount"]});
-              console.log("456") ;
+
             }
             else if(data[i]["outputs"][j]["next_tx_hash"] != "" && nodeList.indexOf(data[i]["outputs"][j]["next_tx_hash"]) == -1){
               nodeList.push(data[i]["outputs"][j]["next_tx_hash"]); 
               graph.nodes.push({id:data[i]["outputs"][j]["next_tx_hash"]}); 
               graph.edges.push({source:data[i]["hash"],target:data[i]["outputs"][j]["next_tx_hash"],amount:data[i]["outputs"][j]["amount"], address:data[i]["outputs"][j]["receiver_address"]});
-              console.log("789") ;
+
             }
-            if(blacklist.indexOf(data[i]["outputs"][j]["receiver_address"]) >= 0)
-              {
-                if(blackNodes.indexOf(data[i]["hash"]) == -1)
-                {
-                  blackNodes.push(data[i]["hash"])
-                }
-                
-              }
+
       
           } 
         }
         
       }
-    console.log(blacklist);
+
     if(nodeList.length==l)return;
 
     
     blacklist = blacklist.concat(dump["blacklist"]);
-    console.log(blacklist);
-    console.log("Hi")
-    
-    console.log(graph.nodes)
+ 
     
     var nbNode = graph.nodes.length;
     var nbEdge = graph.edges.length;
@@ -373,9 +331,6 @@ function extendGraph(txn){
 
     console.log(graphSigma.nodes)
     console.log(graphSigma.edges)
-    //setTimeout(function(){s.refresh();},1000)
-    //s.graph.read(graphSigma);
-    //sigma.plugins.relativeSize(s, 10);
     s.refresh();
     s.startForceAtlas2();
     window.setTimeout(function() {s.killForceAtlas2()}, 1000);
@@ -384,68 +339,68 @@ function extendGraph(txn){
 
 
 function buildGraph(graph){
-var graphSigma = {
-  nodes: [],
-  edges: []
-};
+    var graphSigma = {
+      nodes: [],
+      edges: []
+    };
 
-var nbNode = graph.nodes.length;
-var nbEdge = graph.edges.length;
+    var nbNode = graph.nodes.length;
+    var nbEdge = graph.edges.length;
 
-nodes = nbNode;
-edges = nbEdge;
+    nodes = nbNode;
+    edges = nbEdge;
 
-var radius = 10;
-x = Math.random() * 2 * radius - radius;
-ylim = Math.sqrt(radius * radius - x * x);
-y = Math.random() * 2 * ylim - ylim;
+    var radius = 10;
+    x = Math.random() * 2 * radius - radius;
+    ylim = Math.sqrt(radius * radius - x * x);
+    y = Math.random() * 2 * ylim - ylim;
 
-graphSigma.nodes.push({ 
-    id:  graph.nodes[0]["id"],
-    label: 'TXN ' + graph.nodes[0]["id"],
-    x: 0,
-    y: 0,
-    size: 30,
-    color: '#EE651D'
-  });
-  
-for (i = 1; i < nbNode; i++)
-{
-  x_coord = Math.random() * 2 * radius - radius;
-  ylim = Math.sqrt(radius * radius - x * x);
-  y_coord = Math.random() * 2 * ylim - ylim;
-  graphSigma.nodes.push({ 
-    id:  graph.nodes[i]["id"],
-    label: 'TXN ' + graph.nodes[i]["id"] ,
-    x: x_coord,
-    y: y_coord,
-    size: 30,
-    color: nodeColor(graph.nodes[i]["id"])
-  });
-}
+    graphSigma.nodes.push({ 
+        id:  graph.nodes[0]["id"],
+        label: 'TXN ' + graph.nodes[0]["id"],
+        x: 0,
+        y: 0,
+        size: 30,
+        color: '#EE651D'
+      });
+      
+    for (i = 1; i < nbNode; i++)
+    {
+      x_coord = Math.random() * 2 * radius - radius;
+      ylim = Math.sqrt(radius * radius - x * x);
+      y_coord = Math.random() * 2 * ylim - ylim;
+      graphSigma.nodes.push({ 
+        id:  graph.nodes[i]["id"],
+        label: 'TXN ' + graph.nodes[i]["id"] ,
+        x: x_coord,
+        y: y_coord,
+        size: 30,
+        color: nodeColor(graph.nodes[i]["id"])
+      });
+    }
 
-for (i = 0; i < nbEdge; i++)
-  graphSigma.edges.push({ 
-    id: i, 
-    label: '' + graph.edges[i]["amount"],
-    source: graph.edges[i]["source"], 
-    target: graph.edges[i]["target"], 
-    color: '#202020',
-    type: 'arrow',
-    address: graph.edges[i]["address"]
-  });
+    for (i = 0; i < nbEdge; i++)
+      graphSigma.edges.push({ 
+        id: i, 
+        label: '' + graph.edges[i]["amount"],
+        source: graph.edges[i]["source"], 
+        target: graph.edges[i]["target"], 
+        color: '#202020',
+        type: 'arrow',
+        address: graph.edges[i]["address"]
+      });
 
 
 
-console.log(graphSigma.nodes)
-console.log(graphSigma.edges)
-s.graph.read(graphSigma);
-//sigma.plugins.relativeSize(s, 10);
-s.refresh();
-s.startForceAtlas2();
-window.setTimeout(function() {s.killForceAtlas2()}, 1000);
+    console.log(graphSigma.nodes)
+    console.log(graphSigma.edges)
+    s.graph.read(graphSigma);
+    //sigma.plugins.relativeSize(s, 10);
+    s.refresh();
+    s.startForceAtlas2();
+    window.setTimeout(function() {s.killForceAtlas2()}, 1000);
 
-return graphSigma;
+    return graphSigma;
 };
 
 
@@ -461,14 +416,12 @@ s.bind('clickNode doubleClickNode rightClickNode', function(e) {
 
 s.bind('overNode', function (e) {
       var label = e.data.node.label;
-      //console.log(label)
-      data = "Fees: 19292<br>Block Height: 123"
-      document.getElementById('details').innerHTML=data;  
+      // Display Data
 
 });
 
 s.bind('overEdge', function (e) {
-s.settings('drawEdgeLabels', true)
+s.settings('drawEdgeLabels', true) // Doesn't work
 })
 
 
