@@ -72,7 +72,7 @@
       </div>
     </form>
     <div style="padding-top: 18px;">
-      <span>Inspected Transaction<div class="dot" style="background-color: #ff4500;"></div></span>
+      <span>Inspected Transaction<div class="dot" style="background-color: #FF4500;"></div></span>
       <span>Input/Output Transactions<div class="dot" style="background-color: #EE651D;"></div></span>
       <span>UTXOs<div class="dot" style="background-color: #0000FF;"></div></span>
     </div>
@@ -88,7 +88,7 @@
 
 <script>
   sigma.utils.pkg('sigma.canvas.nodes');
-  
+
   var blacklist = [], edges = 0, nodeList = [];
 
   var s = new sigma(
@@ -109,10 +109,11 @@
         edgeHoverHighlightNodes: 'circle',
         sideMargin: 1,
         edgeHoverColor: 'red',
-        defaultEdgeHoverColor: '#fff',
+        defaultEdgeHoverColor: '#FFFFFF',
         edgeHoverSizeRatio: 1,
         edgeHoverExtremities: true,
         drawEdgeLabels: true,
+        drawBorder: true,
       }
     }
   );
@@ -123,6 +124,8 @@
     var txn_hash = document.getElementById('txn').value;
     console.log(txn_hash);
     // document.getElementById('txn').value = "";
+
+    document.getElementById('details').innerHTML = "<h2>Transaction under Inspection: " + txn_hash + "</h2>";
 
     s.graph.clear();
     s.graph.read({
@@ -150,26 +153,35 @@
       var txn_outputs = txn["outputs"];
       for (const tx_input of txn_inputs) {
         var nodeId = tx_input["prev_tx_hash"];
+        var edgeColor = "#89CFF0";
         if (tx_input["sender_address"] == "COINBASE") {
           nodeId = "COINBASE: " + txn["hash"];
+          edgeColor = "#787878";
+        }
+        if (blacklist.indexOf(tx_input["sender_address"]) != -1) {
+          edgeColor = "#000000";
         }
         if (nodeList.indexOf(nodeId) == -1) {
           nodeList.push(nodeId);
           graph.nodes.push({ id: nodeId });
-          graph.edges.push({ source: nodeId, target: txn["hash"], amount: tx_input["amount"], address: tx_input["sender_address"] });
+          graph.edges.push({ source: nodeId, target: txn["hash"], amount: tx_input["amount"], address: tx_input["sender_address"], color: edgeColor });
         }
       }
 
       for (var j = 0; j < txn_outputs.length; j++) {
         const tx_output = txn_outputs[j];
         var nodeId = tx_output["next_tx_hash"];
+        var edgeColor = "#89CFF0";
         if (tx_output["next_tx_hash"] == "") { // UTXO
           nodeId = "UTXO " + (j + 1) + ": " + txn["hash"];
+        }
+        if (blacklist.indexOf(tx_output["receiver_address"]) != -1) {
+          edgeColor = "#000000";
         }
         if (nodeList.indexOf(nodeId) == -1) {
           nodeList.push(nodeId);
           graph.nodes.push({ id: nodeId });
-          graph.edges.push({ source: txn["hash"], target: nodeId, amount: tx_output["amount"], address: tx_output["receiver_address"] });
+          graph.edges.push({ source: txn["hash"], target: nodeId, amount: tx_output["amount"], address: tx_output["receiver_address"], color: edgeColor });
         }
       }
     }
@@ -183,12 +195,13 @@
     else if (nodeName[0] == "C") { // COINBASE
       return "#FFFF00";
     }
-    else return "#EE651D"
+    else return "#FF9966";
   }
 
   function getData(txn) {
     var dump;
     $.ajax({
+      // url: "http://nextcloud.somecha.in/tx/" + txn,
       url: "http://127.0.0.1:5000/tx/" + txn,
       async: false,
       dataType: 'json',
@@ -210,17 +223,18 @@
     var newGraphData = txns_to_new_graph_using_nodelist(dump["txns"]);
 
     if (nodeList.length == l) {
+      alert('Tx Already Explored!')
       // no new nodes
       return;
     }
 
     blacklist = blacklist.concat(dump["blacklist"]);
 
-    for (i = 0; i < newGraphData.nodes.length; i++) {
-      s.graph.addNode(getNode(newGraphData.nodes[i]));
+    for (var i = 0; i < newGraphData.nodes.length; i++) {
+      s.graph.addNode(getNode(newGraphData.nodes[i], i == 0 && l == 0)); // l == 0 checks that it is the first time we are adding nodes
     }
 
-    for (i = 0; i < newGraphData.edges.length; i++) {
+    for (var i = 0; i < newGraphData.edges.length; i++) {
       s.graph.addEdge(getEdge(newGraphData.edges[i], i + edges));
     }
 
@@ -231,19 +245,25 @@
     edges = edges + newGraphData.edges.length;
   }
 
-  function getNode(nodeData) {
+  function getNode(nodeData, main) {
     var radius = 10;
     var x_coord = Math.random() * 2 * radius - radius;
     var ylim = Math.sqrt(radius * radius - x_coord * x_coord);
     var y_coord = Math.random() * 2 * ylim - ylim;
-    return {
+    var node = {
       id: nodeData["id"],
       label: 'TXN ' + nodeData["id"],
       x: x_coord,
       y: y_coord,
-      size: 30,
+      size: 40,
       color: nodeColor(nodeData["id"])
     };
+    if (main) {
+      node.size = 50;
+      node.color = '#ff4500';
+      node.borderColor = '#000000';
+    }
+    return node;
   }
 
   function getEdge(edgeData, id) {
@@ -252,7 +272,7 @@
       label: '' + edgeData["amount"],
       source: edgeData["source"],
       target: edgeData["target"],
-      color: '#202020',
+      color: edgeData["color"],
       type: 'arrow',
       address: edgeData["address"],
     }
@@ -260,7 +280,7 @@
 
   s.bind('clickNode doubleClickNode rightClickNode', function (e) {
     console.log(e.data.node.id, e.type, e.data.node.label, e.data.captor);
-    if (e.data.node.color == "#EE651D") { // Neither UTXO nor COINBASE
+    if (e.data.node.label.startsWith("TXN")) {
       extendGraph(e.data.node.id);
     }
   });
