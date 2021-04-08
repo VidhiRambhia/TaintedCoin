@@ -89,7 +89,7 @@ def get_tx_details(tx_hash):
             'next_tx_hash': tx_hash_from_val(prev_tx_val) if prev_tx_val is not None else '',
         })
     if index + 1 != n_outputs:
-        print(f"Mismatch in the number of outputs for tx: {tx_val} {index+1} != {n_outputs}")
+        print(f"Mismatch in the number of outputs for tx: {tx_hash} {tx_val} {index+1} != {n_outputs}")
     output_sum = sum(x['amount'] for x in outputs)
     txn['outputs'] = outputs
 
@@ -120,7 +120,7 @@ def get_tx_details(tx_hash):
                 pass
     input_sum = sum(x['amount'] for x in inputs)
     if len(inputs) != n_inputs:
-        print(f"Mismatch in the number of inputs for tx: {tx_val} {len(inputs)} != {n_inputs}")
+        print(f"Mismatch in the number of inputs for tx: {tx_hash} {tx_val} {len(inputs)} != {n_inputs}")
     txn['inputs'] = inputs
     txn['fees'] = 0 if is_coinbase else input_sum - output_sum
     return txn
