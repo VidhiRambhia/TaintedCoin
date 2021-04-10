@@ -179,6 +179,8 @@ def get_blacklist_whitelist_from_tx_array(tx_array):
         for outp in tx['outputs']:
             addresses.add(outp['receiver_address'])
     for address in addresses:
+        if address == "COINBASE":
+            continue
         status = get_address_status(address)
         if status == 'WHITE':
             whitelisted_addresses.append(address)
