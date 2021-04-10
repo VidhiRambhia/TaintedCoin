@@ -56,6 +56,7 @@
   <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/plugins/sigma.renderers.customShapes/shape-library.js"></script>
   <script
     src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/plugins/sigma.renderers.customShapes/sigma.renderers.customShapes.js"></script>
+  <script src="https://rawgit.com/dawsonbotsford/satoshi-bitcoin/master/index.bundle.js"></script>
   <!--CSS-->
   <link rel="stylesheet" href="../static/style.css">
   <!--jquery-->
@@ -84,14 +85,18 @@
       <div class="point"></div>
     </div>
   </div>
-  <div id='sigma-container'></div>
-  <div style="padding: 10px;" id='hovered_node_details'></div>
+  <div id='sigma-container' style="height: 70%;"></div>
+  <div style="width: 80%;">
+    <div style="padding: 10px;" id='hovered_node_details'>-</div>
+    <div style="padding: 10px; overflow-x:auto;" id='addresses'></div>
+  </div>
 </body>
 
 <script>
   sigma.utils.pkg('sigma.canvas.nodes');
 
-  var blackList = [], whiteList = [], nodeIdList = [], edgeIdList = [], current_txn;
+  var blackList = [], whiteList = [], nodeIdList = [], edgeIdList = [];
+  const THRESHOLD = 400;
 
   var s = new sigma(
     {
@@ -231,6 +236,10 @@
       // no new nodes
       return;
     }
+    if (nodeIdList.length > THRESHOLD) {
+      alert('Node Limit Reached!')
+      return;
+    }
 
     for (var i = 0; i < newGraphData.nodes.length; i++) {
       s.graph.addNode(getNode(newGraphData.nodes[i], i == 0 && l == 0)); // l == 0 checks that it is the first time we are adding nodes
@@ -247,22 +256,34 @@
     const black_edge_color = "black";
     const grey1_edge_color = "grey";
     const grey2_edge_color = "silver";
+    const whites = {};
+    const blacks = {};
+    const grey1s = {};
+    const grey2s = {};
+    for(const add of blackList) {
+      blacks[add] = true;
+    }
+    for(const add of whiteList) {
+      whites[add] = true;
+    }
     for (var edge of graph_edges) {
-      if (edge.address == "COINBASE" || whiteList.indexOf(edge.address) != -1) {
+      if (edge.address == "COINBASE" || whites[edge.address]) {
         edge.color = white_edge_color;
       }
     }
     for (var edge of graph_edges) {
-      if (blackList.indexOf(edge.address) != -1) {
+      if (blacks[edge.address]) {
         edge.color = black_edge_color;
         graph_edges.forEach(ed => {
           if (ed.target == edge.source) { // input edge
             if (ed.color != black_edge_color && ed.color != white_edge_color) {
               ed.color = grey1_edge_color;
+              grey1s[ed.address] = true;
               graph_edges.forEach(e => {
                 if (e.target == ed.source) { // input edge
                   if (e.color != black_edge_color && e.color != white_edge_color && e.color != grey1_edge_color) {
                     e.color = grey2_edge_color;
+                    grey2s[e.address] = true;
                   }
                 }
               });
@@ -273,10 +294,12 @@
           if (ed.source == edge.target) { // output edge
             if (ed.color != black_edge_color && ed.color != white_edge_color) {
               ed.color = grey1_edge_color;
+              grey1s[ed.address] = true;
               graph_edges.forEach(e => {
                 if (e.source == ed.target) { // output edge
                   if (e.color != black_edge_color && e.color != white_edge_color && e.color != grey1_edge_color) {
                     e.color = grey2_edge_color;
+                    grey2s[e.address] = true;
                   }
                 }
               });
@@ -285,6 +308,12 @@
         });
       }
     }
+    var addresses =
+    "<tr><th>White</th><td>" + Object.keys(whites) + "</td></tr>" +
+    "<tr><th>Black</th><td>" + Object.keys(blacks) + "</td></tr>" +
+    "<tr><th>Grey1</th><td>" + Object.keys(grey1s) + "</td></tr>" +
+    "<tr><th>Grey2</th><td>" + Object.keys(grey2s) + "</td></tr>";
+    document.getElementById('addresses').innerHTML = "<table><tbody>"+addresses+"</tbody></table>";
 
     s.refresh();
     s.startForceAtlas2();
@@ -315,16 +344,18 @@
   function getEdge(edgeData) {
     return {
       id: edgeData["id"],
-      label: '' + edgeData["amount"],
+      // label: sb.toBitcoin(edgeData["amount"]) + " BTC",
+      label: edgeData["amount"] + " (" + edgeData["address"].substring(0, 5) + "...)",
       source: edgeData["source"],
       target: edgeData["target"],
       color: "#89CFF0",
-      type: 'arrow',
+      type: "arrow",
       address: edgeData["address"],
+      amount: edgeData["amount"],
     }
   }
 
-  s.bind('clickNode doubleClickNode rightClickNode', function (e) {
+  s.bind('clickNode doubleClickNode', function (e) {
     console.log(e.data.node.id, e.type, e.data.node.label, e.data.captor);
     var label = e.data.node.label;
     if (!label.startsWith("UTXO") && !label.startsWith("COINBASE")) {
@@ -334,14 +365,23 @@
 
   s.bind('overNode', function (e) {
     var id = e.data.node.id;
+    var input = 0;
+    var output = 0;
+    s.graph.edges().forEach(edge => {
+      if(edge.source == id) {
+        output += edge.amount;
+      } else if(edge.target == id) {
+        input += edge.amount;
+      }
+    });
     if (id[0] === "U") {
-      document.getElementById('hovered_node_details').innerHTML = 'UTXO';
+      document.getElementById('hovered_node_details').innerHTML = 'UTXO - ' + sb.toBitcoin(input).toFixed(8) + ' BTC';
     }
     else if (id[0] === "C") {
-      document.getElementById('hovered_node_details').innerHTML = 'COINBASE';
+      document.getElementById('hovered_node_details').innerHTML = 'COINBASE - ' + sb.toBitcoin(output).toFixed(8) + ' BTC';
     }
     else {
-      document.getElementById('hovered_node_details').innerHTML = 'TXN: ' + id;
+      document.getElementById('hovered_node_details').innerHTML = `TXN ${id}; Input: ${sb.toBitcoin(input).toFixed(8)} BTC; Output: ${sb.toBitcoin(output).toFixed(8)} BTC`;
     }
   });
 
