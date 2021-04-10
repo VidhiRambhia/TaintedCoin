@@ -207,6 +207,67 @@ def tx_data_route(hash):
 
 @app.route('/tx/<hash>')
 def tx_graph_route(hash):
+    # return {
+    #     "blacklist":["op"],
+    #     "whitelist":["white"],
+    #     "txns":[
+    #         {
+    #             "block_height":1,"fees":0,"hash":"M",
+    #             "inputs":[
+    #                 {"amount":12,"prev_tx_hash":"I1","sender_address":"ab"},
+    #                 {"amount":18,"prev_tx_hash":"I2","sender_address":"op"},
+    #             ],"outputs":[
+    #                 {"amount":11,"next_tx_hash":"","receiver_address":"ef"}, # utxo
+    #                 {"amount":10,"next_tx_hash":"O2","receiver_address":"gh"},
+    #                 {"amount":9,"next_tx_hash":"","receiver_address":"ij"}, # utxo
+    #             ]
+    #         },
+    #         {
+    #             "block_height":1,"fees":0,"hash":"I2",
+    #             "inputs":[
+    #                 {"amount":7,"prev_tx_hash":"","sender_address":"COINBASE"},
+    #                 {"amount":19,"prev_tx_hash":"I2I2","sender_address":"mn"},
+    #             ],"outputs":[
+    #                 {"amount":18,"next_tx_hash":"M","receiver_address":"op"},
+    #                 {"amount":8,"next_tx_hash":"","receiver_address":"uv"}, # utxo
+    #             ]
+    #         },
+    #         {
+    #             "block_height":1,"fees":0,"hash":"O2",
+    #             "inputs":[
+    #                 {"amount":10,"prev_tx_hash":"M","sender_address":"gh"},
+    #             ],"outputs":[
+    #                 {"amount":4,"next_tx_hash":"O2O1","receiver_address":"qr"},
+    #                 {"amount":6,"next_tx_hash":"O2O2","receiver_address":"st"},
+    #             ]
+    #         },
+    #         {
+    #             "block_height":1,"fees":0,"hash":"I2I2",
+    #             "inputs":[
+    #                 {"amount":20,"prev_tx_hash":"I2I2I1","sender_address":"yz"},
+    #             ],"outputs":[
+    #                 {"amount":19,"next_tx_hash":"I2","receiver_address":"mn"},
+    #                 {"amount":1,"next_tx_hash":"","receiver_address":"yz"}, # utxo
+    #             ]
+    #         },
+    #         {
+    #             "block_height":1,"fees":0,"hash":"O2O1",
+    #             "inputs":[
+    #                 {"amount":4,"prev_tx_hash":"O2","sender_address":"qr"},
+    #             ],"outputs":[
+    #                 {"amount":4,"next_tx_hash":"O2O1O1","receiver_address":"wx"},
+    #             ]
+    #         },
+    #         {
+    #             "block_height":1,"fees":0,"hash":"I2I2I1",
+    #             "inputs":[
+    #                 {"amount":20,"prev_tx_hash":"I2I2I1I1","sender_address":"abc"},
+    #             ],"outputs":[
+    #                 {"amount":20,"next_tx_hash":"I2I2","receiver_address":"yz"},
+    #             ]
+    #         },
+    #     ],
+    # }
     txn = get_tx_details(hash)
     tx_graph_array = get_tx_graph_array(txn)
     return jsonify(data_from_tx_array(tx_graph_array))

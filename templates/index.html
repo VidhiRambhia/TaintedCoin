@@ -89,7 +89,7 @@
 <script>
   sigma.utils.pkg('sigma.canvas.nodes');
 
-  var blacklist = [], edges = 0, nodeList = [];
+  var blackList = [], whiteList = [], nodeIdList = [], edgeIdList = [];
 
   var s = new sigma(
     {
@@ -132,9 +132,10 @@
       nodes: [],
       edges: []
     });
-    blacklist = [];
-    edges = 0;
-    nodeList = [];
+    blackList = [];
+    whiteList = [];
+    nodeIdList = [];
+    edgeIdList = [];
 
     extendGraph(txn_hash);
   });
@@ -145,43 +146,42 @@
       edges: []
     };
     for (const txn of txns) {
-      if (nodeList.indexOf(txn["hash"]) == -1) {
-        nodeList.push(txn["hash"]);
+      if (nodeIdList.indexOf(txn["hash"]) == -1) {
+        nodeIdList.push(txn["hash"]);
         graph.nodes.push({ id: txn["hash"] });
       }
       var txn_inputs = txn["inputs"];
       var txn_outputs = txn["outputs"];
       for (const tx_input of txn_inputs) {
         var nodeId = tx_input["prev_tx_hash"];
-        var edgeColor = "#89CFF0";
         if (tx_input["sender_address"] == "COINBASE") {
           nodeId = "COINBASE: " + txn["hash"];
-          edgeColor = "#787878";
         }
-        if (blacklist.indexOf(tx_input["sender_address"]) != -1) {
-          edgeColor = "#000000";
-        }
-        if (nodeList.indexOf(nodeId) == -1) {
-          nodeList.push(nodeId);
+        if (nodeIdList.indexOf(nodeId) == -1) {
+          nodeIdList.push(nodeId);
           graph.nodes.push({ id: nodeId });
-          graph.edges.push({ source: nodeId, target: txn["hash"], amount: tx_input["amount"], address: tx_input["sender_address"], color: edgeColor });
+        }
+        var edgeId = nodeId + "-" + txn["hash"];
+        if (edgeIdList.indexOf(edgeId) == -1) {
+          edgeIdList.push(edgeId);
+          graph.edges.push({ id: edgeId, source: nodeId, target: txn["hash"], amount: tx_input["amount"], address: tx_input["sender_address"] });
         }
       }
 
       for (var j = 0; j < txn_outputs.length; j++) {
         const tx_output = txn_outputs[j];
         var nodeId = tx_output["next_tx_hash"];
-        var edgeColor = "#89CFF0";
         if (tx_output["next_tx_hash"] == "") { // UTXO
-          nodeId = "UTXO " + (j + 1) + ": " + txn["hash"];
+          nodeId = "UTXO " + j + ": " + txn["hash"];
         }
-        if (blacklist.indexOf(tx_output["receiver_address"]) != -1) {
-          edgeColor = "#000000";
-        }
-        if (nodeList.indexOf(nodeId) == -1) {
-          nodeList.push(nodeId);
+        if (nodeIdList.indexOf(nodeId) == -1) {
+          nodeIdList.push(nodeId);
           graph.nodes.push({ id: nodeId });
-          graph.edges.push({ source: txn["hash"], target: nodeId, amount: tx_output["amount"], address: tx_output["receiver_address"], color: edgeColor });
+        }
+        var edgeId = txn["hash"] + "-" + nodeId;
+        if (edgeIdList.indexOf(edgeId) == -1) {
+          edgeIdList.push(edgeId);
+          graph.edges.push({ id: edgeId, source: txn["hash"], target: nodeId, amount: tx_output["amount"], address: tx_output["receiver_address"] });
         }
       }
     }
@@ -217,48 +217,93 @@
     if (dump == undefined) {
       return;
     }
-
-    var l = nodeList.length;
-
+    
+    blackList = blackList.concat(dump["blacklist"]);
+    whiteList = whiteList.concat(dump["whitelist"]);
+    
+    var l = nodeIdList.length;
+    
     var newGraphData = txns_to_new_graph_using_nodelist(dump["txns"]);
 
-    if (nodeList.length == l) {
+    if (nodeIdList.length == l) {
       alert('Tx Already Explored!')
       // no new nodes
       return;
     }
-
-    blacklist = blacklist.concat(dump["blacklist"]);
 
     for (var i = 0; i < newGraphData.nodes.length; i++) {
       s.graph.addNode(getNode(newGraphData.nodes[i], i == 0 && l == 0)); // l == 0 checks that it is the first time we are adding nodes
     }
 
     for (var i = 0; i < newGraphData.edges.length; i++) {
-      s.graph.addEdge(getEdge(newGraphData.edges[i], i + edges));
+      s.graph.addEdge(getEdge(newGraphData.edges[i]));
+    }
+
+    var graph_edges = s.graph.edges();
+    
+    const normal_edge_color = "babyblue";
+    const white_edge_color = "yellow";
+    const black_edge_color = "black";
+    const grey1_edge_color = "grey";
+    const grey2_edge_color = "silver";
+    for (var edge of graph_edges) {
+      if (edge.address == "COINBASE" || whiteList.indexOf(edge.address) != -1) {
+        edge.color = white_edge_color;
+      }
+    }
+    for (var edge of graph_edges) {
+      if (blackList.indexOf(edge.address) != -1) {
+        edge.color = black_edge_color;
+        graph_edges.forEach(ed => {
+          if (ed.target == edge.source) { // input edge
+            if (ed.color != black_edge_color && ed.color != white_edge_color) {
+              ed.color = grey1_edge_color;
+              graph_edges.forEach(e => {
+                if (e.target == ed.source) { // input edge
+                  if (e.color != black_edge_color && e.color != white_edge_color && e.color != grey1_edge_color) {
+                    e.color = grey2_edge_color;
+                  }
+                }
+              });
+            }
+          }
+        });
+        graph_edges.forEach(ed => {
+          if (ed.source == edge.target) { // output edge
+            if (ed.color != black_edge_color && ed.color != white_edge_color) {
+              ed.color = grey1_edge_color;
+              graph_edges.forEach(e => {
+                if (e.source == ed.target) { // output edge
+                  if (e.color != black_edge_color && e.color != white_edge_color && e.color != grey1_edge_color) {
+                    e.color = grey2_edge_color;
+                  }
+                }
+              });
+            }
+          }
+        });
+      }
     }
 
     s.refresh();
     s.startForceAtlas2();
     window.setTimeout(function () { s.killForceAtlas2() }, 1000);
-
-    edges = edges + newGraphData.edges.length;
   }
 
-  function getNode(nodeData, main) {
+  function getNode(nodeData, is_main) {
     var radius = 10;
     var x_coord = Math.random() * 2 * radius - radius;
     var ylim = Math.sqrt(radius * radius - x_coord * x_coord);
     var y_coord = Math.random() * 2 * ylim - ylim;
     var node = {
       id: nodeData["id"],
-      label: 'TXN ' + nodeData["id"],
+      label: nodeData["id"],
       x: x_coord,
       y: y_coord,
       size: 40,
       color: nodeColor(nodeData["id"])
     };
-    if (main) {
+    if (is_main) {
       node.size = 50;
       node.color = '#ff4500';
       node.borderColor = '#000000';
@@ -266,13 +311,13 @@
     return node;
   }
 
-  function getEdge(edgeData, id) {
+  function getEdge(edgeData) {
     return {
-      id: id,
+      id: edgeData["id"],
       label: '' + edgeData["amount"],
       source: edgeData["source"],
       target: edgeData["target"],
-      color: edgeData["color"],
+      color: "#89CFF0",
       type: 'arrow',
       address: edgeData["address"],
     }
@@ -280,7 +325,8 @@
 
   s.bind('clickNode doubleClickNode rightClickNode', function (e) {
     console.log(e.data.node.id, e.type, e.data.node.label, e.data.captor);
-    if (e.data.node.label.startsWith("TXN")) {
+    var label = e.data.node.label;
+    if (!label.startsWith("UTXO") && !label.startsWith("COINBASE")) {
       extendGraph(e.data.node.id);
     }
   });
