@@ -1,36 +1,52 @@
-html { height:1000px;}
-body {height: 100%;margin:0;}
-#sigma-container { width:80%; height:80%; background-color:white}
+body {
+    height: 100%;
+    margin: 0;
+    overflow-x: hidden;
+    word-wrap: break-word;
+    background-color: lightgray;
+}
+
+#sigma-container {
+    width: 80%;
+    height: 80%;
+    background-color: white;
+    border: 1px solid black;
+    box-sizing: border-box;
+}
+
 .dot {
     height: 10px;
     width: 15px;
     border-radius: 50%;
     padding: 12px 18px;
-  }
+}
+
 .arrow {
-    width:120px;
+    width: 120px;
 }
 
 .line {
-    margin-top:14px;
-    width:90px;
-    background:black;
-    height:5px;
-    float:left;
+    margin-top: 14px;
+    width: 90px;
+    background: black;
+    height: 5px;
+    float: left;
 }
-.point {	
-    width: 0; 
-	height: 0; 
-	border-top: 20px solid transparent;
-	border-bottom: 20px solid transparent;
-	border-left: 30px solid black;
-    float:right;
+
+.point {
+    width: 0;
+    height: 0;
+    border-top: 20px solid transparent;
+    border-bottom: 20px solid transparent;
+    border-left: 30px solid black;
+    float: right;
 }
-h2 {
-	margin: 1em 0 0.5em 0;
-	color: #343434;
-	font-weight: normal;
-	font-size: 20px;
-	line-height: 40px;
-	font-family: 'Orienta', sans-serif;
+
+h3 {
+    margin: 1em 0 0.5em 0;
+    color: #343434;
+    font-weight: normal;
+    font-size: 18px;
+    line-height: 40px;
+    font-family: 'Orienta', sans-serif;
 }

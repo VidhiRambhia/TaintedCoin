@@ -63,15 +63,17 @@
 </head>
 
 <body>
-  <div style="width:15%;float:right;text-align:left;padding: 12px 18px;">
+  <div style="width:18%; height:100%; float:right; text-align:left; padding: 1%;">
     <form id="form">
       <label for="txn">Tx Hash:</label><br>
-      <input type="text" id="txn" name="txn"><br>
+      <input style="width: 100%;" type="text" id="txn" name="txn"><br>
       <div style="padding-top: 18px;">
         <input type="submit" id="submit" name="submit"><br>
       </div>
     </form>
+    <div style="padding-top: 18px; margin-top: 10px;margin-bottom: 10px;" id='inspected_node_details'></div>
     <div style="padding-top: 18px;">
+      <div style="text-align: center;padding: 5px;"><u>Legend</u></div>
       <span>Inspected Transaction<div class="dot" style="background-color: #FF4500;"></div></span>
       <span>Input/Output Transactions<div class="dot" style="background-color: #EE651D;"></div></span>
       <span>UTXOs<div class="dot" style="background-color: #0000FF;"></div></span>
@@ -83,13 +85,13 @@
     </div>
   </div>
   <div id='sigma-container'></div>
-  <div style="padding-top: 18px;" id='details'></div>
+  <div style="padding: 10px;" id='hovered_node_details'></div>
 </body>
 
 <script>
   sigma.utils.pkg('sigma.canvas.nodes');
 
-  var blackList = [], whiteList = [], nodeIdList = [], edgeIdList = [];
+  var blackList = [], whiteList = [], nodeIdList = [], edgeIdList = [], current_txn;
 
   var s = new sigma(
     {
@@ -100,7 +102,7 @@
       settings: {
         edgeLabelSize: 'proportional',
         drawEdgeLabels: false,
-        minArrowSize: 10,
+        minArrowSize: 12,
         labelThreshold: 100,
         borderSize: 2,
         outerBorderSize: 3,
@@ -123,9 +125,8 @@
 
     var txn_hash = document.getElementById('txn').value;
     console.log(txn_hash);
-    // document.getElementById('txn').value = "";
 
-    document.getElementById('details').innerHTML = "<h2>Transaction under Inspection: " + txn_hash + "</h2>";
+    document.getElementById('inspected_node_details').innerHTML = "Transaction under Inspection: " + txn_hash;
 
     s.graph.clear();
     s.graph.read({
@@ -217,12 +218,12 @@
     if (dump == undefined) {
       return;
     }
-    
+
     blackList = blackList.concat(dump["blacklist"]);
     whiteList = whiteList.concat(dump["whitelist"]);
-    
+
     var l = nodeIdList.length;
-    
+
     var newGraphData = txns_to_new_graph_using_nodelist(dump["txns"]);
 
     if (nodeIdList.length == l) {
@@ -240,7 +241,7 @@
     }
 
     var graph_edges = s.graph.edges();
-    
+
     const normal_edge_color = "babyblue";
     const white_edge_color = "yellow";
     const black_edge_color = "black";
@@ -291,7 +292,7 @@
   }
 
   function getNode(nodeData, is_main) {
-    var radius = 10;
+    var radius = 2;
     var x_coord = Math.random() * 2 * radius - radius;
     var ylim = Math.sqrt(radius * radius - x_coord * x_coord);
     var y_coord = Math.random() * 2 * ylim - ylim;
@@ -332,14 +333,22 @@
   });
 
   s.bind('overNode', function (e) {
-    var label = e.data.node.label;
-    // TODO Display Data
+    var id = e.data.node.id;
+    if (id[0] === "U") {
+      document.getElementById('hovered_node_details').innerHTML = 'UTXO';
+    }
+    else if (id[0] === "C") {
+      document.getElementById('hovered_node_details').innerHTML = 'COINBASE';
+    }
+    else {
+      document.getElementById('hovered_node_details').innerHTML = 'TXN: ' + id;
+    }
   });
 
   s.bind('overEdge', function (e) { // Doesn't work
     // TODO
-    // console.log('overEdge')
-    // s.settings('drawEdgeLabels', true)
+    // console.log('overEdge');
+    // s.settings('drawEdgeLabels', true);
   })
 
 </script>
