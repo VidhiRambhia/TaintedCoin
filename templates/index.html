@@ -69,6 +69,10 @@
       <label for="txn">Tx Hash:</label><br>
       <input style="width: 100%;" type="text" id="txn" name="txn"><br>
       <div style="padding-top: 18px;">
+        <input type="radio" id="graph" name="graphType" value="graph" checked>
+        <label for="graph">Graph</label><br>
+        <input type="radio" id="path" name="graphType" value="path">
+        <label for="path">Path</label><br>
         <input type="submit" id="submit" name="submit"><br>
       </div>
     </form>
@@ -143,7 +147,9 @@
     nodeIdList = [];
     edgeIdList = [];
 
-    extendGraph(txn_hash);
+    const graphType = document.querySelector('input[name="graphType"]:checked').value;
+
+    extendGraph(txn_hash, graphType);
   });
 
   function txns_to_new_graph_using_nodelist(txns) {
@@ -204,11 +210,17 @@
     else return "#FF9966";
   }
 
-  function getData(txn) {
+  function getData(txn, graphType) {
+    // var url = "http://nextcloud.somecha.in";
+    var url = "http://127.0.0.1:5000";
+    if(graphType == "path") {
+      url += "/tx_path/" + txn;
+    } else { // graph
+      url += "/tx/" + txn;
+    }
     var dump;
     $.ajax({
-      // url: "http://nextcloud.somecha.in/tx/" + txn,
-      url: "http://127.0.0.1:5000/tx/" + txn,
+      url: url,
       async: false,
       dataType: 'json',
       success: function (d) {
@@ -218,8 +230,11 @@
     return dump;
   }
 
-  function extendGraph(txn_hash) {
-    var dump = getData(txn_hash);
+  function extendGraph(txn_hash, graphType) {
+    if(typeof graphType == 'undefined') {
+      graphType = "graph";
+    }
+    var dump = getData(txn_hash, graphType);
     if (dump == undefined) {
       return;
     }

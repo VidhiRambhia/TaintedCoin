@@ -1,5 +1,5 @@
 import sqlite3
-from flask import g, Flask, jsonify, render_template
+from flask import g, Flask, json, jsonify, render_template
 from flask_cors import CORS
 from functools import lru_cache
 import ast
@@ -206,6 +206,30 @@ def main_view():
 @app.route('/tx_data/<hash>')
 def tx_data_route(hash):
     return jsonify(get_tx_details(hash))
+
+@app.route('/tx_path/<hash>')
+def tx_path_route(hash):
+    MAX_HOPS = 100
+    tx = get_tx_details(hash)
+    txns = [tx]
+    for _ in range(MAX_HOPS):
+        max_amt = -1
+        next_hash = None
+        for output in tx['outputs']:
+            amount = output['amount']
+            if amount > max_amt:
+                max_amt = amount
+                next_hash = output['next_tx_hash']
+        if next_hash is not None:
+            next_tx = get_tx_details(next_hash)
+            if next_tx is not None:
+                txns.append(next_tx)
+                tx = next_tx
+            else:
+                break
+        else:
+            break
+    return jsonify(data_from_tx_array(txns))
 
 @app.route('/tx/<hash>')
 def tx_graph_route(hash):
