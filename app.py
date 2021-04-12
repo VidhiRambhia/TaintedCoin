@@ -283,6 +283,18 @@ def block_coinbase_data_route(block_height):
     tx_graph_array = get_tx_graph_array(coinbase_txn)
     return jsonify(data_from_tx_array(tx_graph_array))
 
+@app.route('/dbstatus')
+def database_status():
+    try:
+        conn = get_db()
+        with conn:
+            maxb = conn.execute("SELECT MAX(block_height) from tx;").fetchone()[0]
+            minb = conn.execute("SELECT MIN(block_height) from tx;").fetchone()[0]
+        return f'Current minimum block height in db -> <a href="https://blockchair.com/bitcoin/block/{minb}">{minb}</a>' + f'<br/>Current maximum block height in db -> <a href="https://blockchair.com/bitcoin/block/{maxb}">{maxb}</a>'
+    except sqlite3.OperationalError:
+        return "DB is locked, currently being updated, please try again after some time"
+
+
 @app.teardown_appcontext
 def close_connection(exception):
     db = getattr(g, '_database', None)
