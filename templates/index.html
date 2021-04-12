@@ -276,12 +276,12 @@
         edge.color = black_edge_color;
         graph_edges.forEach(ed => {
           if (ed.target == edge.source) { // input edge
-            if (ed.color != black_edge_color && ed.color != white_edge_color) {
+            if (!blacks[ed.address] && !whites[ed.address]) {
               ed.color = grey1_edge_color;
               grey1s[ed.address] = true;
               graph_edges.forEach(e => {
                 if (e.target == ed.source) { // input edge
-                  if (e.color != black_edge_color && e.color != white_edge_color && e.color != grey1_edge_color) {
+                  if (!blacks[e.address] && !whites[e.address] && !grey1s[e.address]) {
                     e.color = grey2_edge_color;
                     grey2s[e.address] = true;
                   }
@@ -292,12 +292,12 @@
         });
         graph_edges.forEach(ed => {
           if (ed.source == edge.target) { // output edge
-            if (ed.color != black_edge_color && ed.color != white_edge_color) {
+            if (!blacks[ed.address] && !whites[ed.address]) {
               ed.color = grey1_edge_color;
               grey1s[ed.address] = true;
               graph_edges.forEach(e => {
                 if (e.source == ed.target) { // output edge
-                  if (e.color != black_edge_color && e.color != white_edge_color && e.color != grey1_edge_color) {
+                  if (!blacks[e.address] && !whites[e.address] && !grey1s[e.address]) {
                     e.color = grey2_edge_color;
                     grey2s[e.address] = true;
                   }
