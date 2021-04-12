@@ -196,6 +196,33 @@ def data_from_tx_array(tx_array):
         'whitelist': whitelist,
     }
 
+def get_tx_path(hash, is_minimal=False):
+    MAX_HOPS = 100
+    tx = get_tx_details(hash)
+    txns = [tx]
+    for _ in range(MAX_HOPS):
+        max_amt = -1
+        max_output = None
+        if is_minimal:
+            tx['inputs'] = []
+        for output in tx['outputs']:
+            amount = output['amount']
+            if amount > max_amt:
+                max_amt = amount
+                max_output = output
+        if max_output is not None:
+            if is_minimal:
+                tx['outputs'] = [max_output]
+            next_tx = get_tx_details(max_output['next_tx_hash'])
+            if next_tx is not None:
+                txns.append(next_tx)
+                tx = next_tx
+            else:
+                break
+        else:
+            break
+    return jsonify(data_from_tx_array(txns))
+
 app = Flask(__name__)
 CORS(app)
 
@@ -209,27 +236,11 @@ def tx_data_route(hash):
 
 @app.route('/tx_path/<hash>')
 def tx_path_route(hash):
-    MAX_HOPS = 100
-    tx = get_tx_details(hash)
-    txns = [tx]
-    for _ in range(MAX_HOPS):
-        max_amt = -1
-        next_hash = None
-        for output in tx['outputs']:
-            amount = output['amount']
-            if amount > max_amt:
-                max_amt = amount
-                next_hash = output['next_tx_hash']
-        if next_hash is not None:
-            next_tx = get_tx_details(next_hash)
-            if next_tx is not None:
-                txns.append(next_tx)
-                tx = next_tx
-            else:
-                break
-        else:
-            break
-    return jsonify(data_from_tx_array(txns))
+    return get_tx_path(hash, is_minimal=False)
+
+@app.route('/tx_minimal_path/<hash>')
+def tx_minimal_path_route(hash):
+    return get_tx_path(hash, is_minimal=True)
 
 @app.route('/tx/<hash>')
 def tx_graph_route(hash):

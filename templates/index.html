@@ -73,6 +73,8 @@
         <label for="graph">Graph</label><br>
         <input type="radio" id="path" name="graphType" value="path">
         <label for="path">Path</label><br>
+        <input type="radio" id="minimal_path" name="graphType" value="minimal_path">
+        <label for="minimal_path">Minimal Path</label><br>
         <input type="submit" id="submit" name="submit"><br>
       </div>
     </form>
@@ -215,6 +217,8 @@
     var url = "http://127.0.0.1:5000";
     if(graphType == "path") {
       url += "/tx_path/" + txn;
+    } else if(graphType == "minimal_path") {
+      url += "/tx_minimal_path/" + txn;
     } else { // graph
       url += "/tx/" + txn;
     }
