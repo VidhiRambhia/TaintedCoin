@@ -213,8 +213,7 @@
   }
 
   function getData(txn, graphType) {
-    // var url = "http://nextcloud.somecha.in";
-    var url = "http://127.0.0.1:5000";
+    var url = '{{ ROOT_URL }}';
     if(graphType == "path") {
       url += "/tx_path/" + txn;
     } else if(graphType == "minimal_path") {

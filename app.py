@@ -1,11 +1,18 @@
 import sqlite3
-from flask import g, Flask, json, jsonify, render_template
+from flask import g, Flask, jsonify, render_template
 from flask_cors import CORS
 from functools import lru_cache
 import ast
+import os
 
-# DATABASE = '/home/teh_devs/bitcoinspy/tx.db'
-DATABASE = 'tx.db'
+DUMP_DB_PATH = os.environ.get('DUMP_DB_PATH')
+if DUMP_DB_PATH is None:
+    DUMP_DB_PATH = 'tx.db'
+print(f"Using DUMP_DB_PATH as: {DUMP_DB_PATH}")
+ROOT_URL = os.environ.get('ROOT_URL')
+if ROOT_URL is None:
+    ROOT_URL = 'http://127.0.0.1:5000'
+print(f"Using ROOT_URL as: {ROOT_URL}")
 
 TX_COLS = ['tx_val', 'n_inputs', 'n_outputs', 'block_height', 'is_coinbase']
 INPUT_COLS = ['tx_val', 'prev_hash', 'prev_index']
@@ -46,7 +53,7 @@ def output_from_tx_val(tx_val):
 def get_db():
     db = getattr(g, '_database', None)
     if db is None:
-        db = g._database = sqlite3.connect(DATABASE)
+        db = g._database = sqlite3.connect(DUMP_DB_PATH)
     return db
 
 def get_address_from_output_obj(outp):
@@ -228,7 +235,7 @@ CORS(app)
 
 @app.route('/')
 def main_view():
-    return render_template('index.html')
+    return render_template('index.html', ROOT_URL=ROOT_URL)
 
 @app.route('/tx_data/<hash>')
 def tx_data_route(hash):
