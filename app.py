@@ -80,6 +80,7 @@ def get_tx_details(tx_hash):
 
     outputs = []
     index = -1
+    is_mismatch = False
     cur.execute(f"SELECT tx_val, prev_index FROM input WHERE prev_hash='{tx_hash}'")
     prev_tx_vals = cur.fetchall()
     prev_tx_vals = {x[1]: x[0] for x in prev_tx_vals}
@@ -97,6 +98,7 @@ def get_tx_details(tx_hash):
             'next_tx_hash': tx_hash_from_val(prev_tx_val) if prev_tx_val is not None else '',
         })
     if index + 1 != n_outputs:
+        is_mismatch = True
         print(f"Mismatch in the number of outputs for tx: {tx_hash} {tx_val} {index+1} != {n_outputs}")
     output_sum = sum(x['amount'] for x in outputs)
     txn['outputs'] = outputs
@@ -128,9 +130,11 @@ def get_tx_details(tx_hash):
                 pass
     input_sum = sum(x['amount'] for x in inputs)
     if len(inputs) != n_inputs:
+        is_mismatch = True
         print(f"Mismatch in the number of inputs for tx: {tx_hash} {tx_val} {len(inputs)} != {n_inputs}")
     txn['inputs'] = inputs
     txn['fees'] = 0 if is_coinbase else input_sum - output_sum
+    txn['is_mismatch'] = is_mismatch
     return txn
 
 def get_coinbase_txn_hash(block_height):

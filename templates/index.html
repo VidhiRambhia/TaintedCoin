@@ -84,6 +84,7 @@
       <span>Inspected Transaction<div class="dot" style="background-color: #FF4500;"></div></span>
       <span>Input/Output Transactions<div class="dot" style="background-color: #EE651D;"></div></span>
       <span>UTXOs<div class="dot" style="background-color: #0000FF;"></div></span>
+      <span>Transactions with insufficient data<div class="dot" style="background-color: #ffe1c4;"></div></span>
     </div>
     <div class="arrow" style="padding-top: 18px;">
       Tainted Path
@@ -101,7 +102,7 @@
 <script>
   sigma.utils.pkg('sigma.canvas.nodes');
 
-  var blackList = [], whiteList = [], nodeIdList = [], edgeIdList = [];
+  var blackList = [], whiteList = [], nodeIdList = [], edgeIdList = [], incompleteNodes = [];
   const THRESHOLD = 400;
 
   var s = new sigma(
@@ -162,10 +163,15 @@
     for (const txn of txns) {
       if (nodeIdList.indexOf(txn["hash"]) == -1) {
         nodeIdList.push(txn["hash"]);
-        graph.nodes.push({ id: txn["hash"] });
+        graph.nodes.push({ id: txn["hash"]});
       }
       var txn_inputs = txn["inputs"];
-      var txn_outputs = txn["outputs"];
+      var txn_outputs = txn["outputs"]; 
+
+      if(txn["is_mismatch"] && incompleteNodes.indexOf(txn["hash"]) == -1 ){
+        incompleteNodes.push(txn["hash"])
+      }   
+
       for (const tx_input of txn_inputs) {
         var nodeId = tx_input["prev_tx_hash"];
         if (tx_input["sender_address"] == "COINBASE") {
@@ -202,8 +208,13 @@
     return graph;
   }
 
-  function nodeColor(nodeName) {
-    if (nodeName[0] == "U") { // UTXO
+  function nodeColor(nodeData) {
+    nodeName = nodeData["id"]
+
+    if(incompleteNodes.indexOf(nodeName) != -1) {
+      return "#ffe1c4";
+    }
+    else if (nodeName[0] == "U") { // UTXO
       return "#0000FF";
     }
     else if (nodeName[0] == "C") { // COINBASE
@@ -239,6 +250,7 @@
     }
     var dump = getData(txn_hash, graphType);
     if (dump == undefined) {
+      alert('Txn Data not found!')
       return;
     }
 
@@ -349,7 +361,7 @@
       x: x_coord,
       y: y_coord,
       size: 40,
-      color: nodeColor(nodeData["id"])
+      color: nodeColor(nodeData)
     };
     if (is_main) {
       node.size = 50;
