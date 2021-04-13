@@ -81,15 +81,34 @@
     <div style="padding-top: 18px; margin-top: 10px;margin-bottom: 10px;" id='inspected_node_details'></div>
     <div style="padding-top: 18px;">
       <div style="text-align: center;padding: 5px;"><u>Legend</u></div>
-      <span>Inspected Transaction<div class="dot" style="background-color: #FF4500;"></div></span>
-      <span>Input/Output Transactions<div class="dot" style="background-color: #EE651D;"></div></span>
-      <span>UTXOs<div class="dot" style="background-color: #0000FF;"></div></span>
-      <span>Transactions with insufficient data<div class="dot" style="background-color: #ffe1c4;"></div></span>
-    </div>
-    <div class="arrow" style="padding-top: 18px;">
-      Tainted Path
-      <div class="line"></div>
-      <div class="point"></div>
+      <div class="wrapper clearfix">
+        <div><div class="circle" style="background-color: #ff4500;"></div><p>Inspected Transaction </p></div>
+        <div><div class="circle" style="background-color: #FF9966;"></div><p>Input/Output Transactions</p></div>
+        <div><div class="circle" style="background-color: #0000FF;"></div><p>UTXO</p></div>
+        <div><div class="circle" style="background-color: #FFFF00;"></div><p>Coinbase Transaction</p></div>
+        <div><div class="circle" style="background-color: #ffe1c4;"></div><p>Transactions with Insufficient Data</p></div>
+        <hr>
+        <div style="margin-top: -30px;">
+          <div class="arrow" style="color: #89cff0;" >&#8594;</div>
+          <p id="text">Normal Path</p>
+        </div>
+        <div style="margin-top: -50px;">
+          <div class="arrow" style="color:yellow;" >&#8594;</div>
+          <p id="text">White Path</p>
+        </div>
+        <div style="margin-top: -50px;">
+          <div class="arrow" style="color:black;" >&#8594;</div>
+          <p id="text">Black Path</p>
+        </div>
+        <div style="margin-top: -50px;">
+          <div class="arrow" style="color:grey;" >&#8594;</div>
+          <p id="text">Grey Path (Hop 1)</p>
+        </div>
+        <div style="margin-top: -50px;">
+          <div class="arrow"style="color:silver"  >&#8594;</div>
+          <p id="text">Grey Path (Hop 2)</p>
+        </div>
+      </div>
     </div>
   </div>
   <div id='sigma-container' style="height: 70%;"></div>
