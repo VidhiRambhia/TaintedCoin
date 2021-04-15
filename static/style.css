@@ -4,6 +4,7 @@ body {
     overflow-x: hidden;
     word-wrap: break-word;
     background-color: #F0F0F0;
+
 }
 
 #sigma-container {
@@ -75,7 +76,7 @@ h2 {
   line-height: 1.6;
 }
 .wrapper {
-  max-width: 100%;
+  min-width: 200px;
 }
 
 .wrapper p {
