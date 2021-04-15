@@ -165,7 +165,7 @@ def get_tx_output_txns(txn):
     assert len(txns) <= len(outp_hashes)
     return txns
 
-def get_tx_graph_array(txn, output_levels=2):
+def get_tx_graph_array(txn, output_levels=1):
     txns = [txn]
     input_txns = get_tx_input_txns(txn)
     txns.extend(input_txns)

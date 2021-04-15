@@ -70,11 +70,29 @@
       <input style="width: 100%;" type="text" id="txn" name="txn"><br>
       <div style="padding-top: 18px;">
         <input type="radio" id="graph" name="graphType" value="graph" checked>
-        <label for="graph">Graph</label><br>
+        <label for="graph" class="tooltip">Graph
+          <span class="tooltiptext">
+            Shows all the inputs and outputs of the transaction, upto 1 level of outputs and 1 level of inputs
+          </span>
+        </label>
+        <br>
         <input type="radio" id="path" name="graphType" value="path">
-        <label for="path">Path</label><br>
+        <label for="path" class="tooltip">Path
+          <span class="tooltiptext">
+            Shows the path of the transaction, following the maximum output, showing all the transactions on the input, along with their inputs and outputs
+          </span>
+        </label>
+        <br>
         <input type="radio" id="minimal_path" name="graphType" value="minimal_path">
-        <label for="minimal_path">Minimal Path</label><br>
+        <label for="minimal_path" class="tooltip">Minimal Path
+          <span class="tooltiptext">
+            Just like "Path", but only the max outputs are shown, and no other inputs and outputs of the transactions on the path
+          </span>
+        </label>
+        <br>
+        <br>
+        <!-- <div class="tooltip" for="minimal_path">Minimal Path
+        </div> -->
         <input type="submit" id="submit" name="submit"><br>
       </div>
     </form>
@@ -82,31 +100,46 @@
     <div style="padding-top: 18px;">
       <div style="text-align: center;padding: 5px;"><u>Legend</u></div>
       <div class="wrapper clearfix">
-        <div><div class="circle" style="background-color: #ff4500;"></div><p>Inspected TXN</p></div>
-        <div><div class="circle" style="background-color: #FF9966;"></div><p>Input/Output TXN</p></div>
-        <div><div class="circle" style="background-color: #0000FF;"></div><p>UTXO</p></div>
-        <div><div class="circle" style="background-color: #FFFF00;"></div><p>Coinbase TXN</p></div>
-        <div><div class="circle" style="background-color: #ffe1c4;"></div><p>TXNs with Insufficient Data</p></div>
+        <div>
+          <div class="circle" style="background-color: #ff4500;"></div>
+          <p>Inspected TXN</p>
+        </div>
+        <div>
+          <div class="circle" style="background-color: #FF9966;"></div>
+          <p>Input/Output TXN</p>
+        </div>
+        <div>
+          <div class="circle" style="background-color: #0000FF;"></div>
+          <p>UTXO</p>
+        </div>
+        <div>
+          <div class="circle" style="background-color: #FFFF00;"></div>
+          <p>Coinbase TXN</p>
+        </div>
+        <div>
+          <div class="circle" style="background-color: #ffe1c4;"></div>
+          <p>TXNs with Insufficient Data</p>
+        </div>
         <hr>
 
         <div style="margin-top: -10px;">
-          <div class="arrow" style="color: #89cff0;" >&#8594;</div>
+          <div class="arrow" style="color: #89cff0;">&#8594;</div>
           <p id="text">Normal Path</p>
         </div>
         <div class="arrow_wrapper">
-          <div class="arrow" style="color:yellow;" >&#8594;</div>
+          <div class="arrow" style="color:yellow;">&#8594;</div>
           <p id="text">White Path</p>
         </div>
         <div class="arrow_wrapper">
-          <div class="arrow" style="color:black;" >&#8594;</div>
+          <div class="arrow" style="color:black;">&#8594;</div>
           <p id="text">Black Path</p>
         </div>
         <div class="arrow_wrapper">
-          <div class="arrow" style="color:grey;" >&#8594;</div>
+          <div class="arrow" style="color:grey;">&#8594;</div>
           <p id="text">Grey Hop 1</p>
         </div>
         <div class="arrow_wrapper">
-          <div class="arrow"style="color:silver"  >&#8594;</div>
+          <div class="arrow" style="color:silver">&#8594;</div>
           <p id="text">Grey Hop 2</p>
         </div>
       </div>
@@ -183,14 +216,14 @@
     for (const txn of txns) {
       if (nodeIdList.indexOf(txn["hash"]) == -1) {
         nodeIdList.push(txn["hash"]);
-        graph.nodes.push({ id: txn["hash"]});
+        graph.nodes.push({ id: txn["hash"] });
       }
       var txn_inputs = txn["inputs"];
-      var txn_outputs = txn["outputs"]; 
+      var txn_outputs = txn["outputs"];
 
-      if(txn["is_mismatch"] && incompleteNodes.indexOf(txn["hash"]) == -1 ){
+      if (txn["is_mismatch"] && incompleteNodes.indexOf(txn["hash"]) == -1) {
         incompleteNodes.push(txn["hash"])
-      }   
+      }
 
       for (const tx_input of txn_inputs) {
         var nodeId = tx_input["prev_tx_hash"];
@@ -231,7 +264,7 @@
   function nodeColor(nodeData) {
     nodeName = nodeData["id"]
 
-    if(incompleteNodes.indexOf(nodeName) != -1) {
+    if (incompleteNodes.indexOf(nodeName) != -1) {
       return "#ffe1c4";
     }
     else if (nodeName[0] == "U") { // UTXO
@@ -245,9 +278,9 @@
 
   function getData(txn, graphType) {
     var url = '{{ ROOT_URL }}';
-    if(graphType == "path") {
+    if (graphType == "path") {
       url += "/tx_path/" + txn;
-    } else if(graphType == "minimal_path") {
+    } else if (graphType == "minimal_path") {
       url += "/tx_minimal_path/" + txn;
     } else { // graph
       url += "/tx/" + txn;
@@ -265,7 +298,7 @@
   }
 
   function extendGraph(txn_hash, graphType) {
-    if(typeof graphType == 'undefined') {
+    if (typeof graphType == 'undefined') {
       graphType = "graph";
     }
     var dump = getData(txn_hash, graphType);
@@ -310,10 +343,10 @@
     const blacks = {};
     const grey1s = {};
     const grey2s = {};
-    for(const add of blackList) {
+    for (const add of blackList) {
       blacks[add] = true;
     }
-    for(const add of whiteList) {
+    for (const add of whiteList) {
       whites[add] = true;
     }
     for (var edge of graph_edges) {
@@ -359,11 +392,11 @@
       }
     }
     var addresses =
-    "<tr><th>White</th><td>" + Object.keys(whites) + "</td></tr>" +
-    "<tr><th>Black</th><td>" + Object.keys(blacks) + "</td></tr>" +
-    "<tr><th>Grey1</th><td>" + Object.keys(grey1s) + "</td></tr>" +
-    "<tr><th>Grey2</th><td>" + Object.keys(grey2s) + "</td></tr>";
-    document.getElementById('addresses').innerHTML = "<table><tbody>"+addresses+"</tbody></table>";
+      "<tr><th>White</th><td>" + Object.keys(whites) + "</td></tr>" +
+      "<tr><th>Black</th><td>" + Object.keys(blacks) + "</td></tr>" +
+      "<tr><th>Grey1</th><td>" + Object.keys(grey1s) + "</td></tr>" +
+      "<tr><th>Grey2</th><td>" + Object.keys(grey2s) + "</td></tr>";
+    document.getElementById('addresses').innerHTML = "<table><tbody>" + addresses + "</tbody></table>";
 
     s.refresh();
     s.startForceAtlas2();
@@ -418,9 +451,9 @@
     var input = 0;
     var output = 0;
     s.graph.edges().forEach(edge => {
-      if(edge.source == id) {
+      if (edge.source == id) {
         output += edge.amount;
-      } else if(edge.target == id) {
+      } else if (edge.target == id) {
         input += edge.amount;
       }
     });
@@ -442,5 +475,39 @@
   })
 
 </script>
+
+<style>
+  /* Tooltip container */
+  .tooltip {
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dotted black;
+    /* If you want dots under the hoverable text */
+  }
+
+  /* Tooltip text */
+  .tooltip .tooltiptext {
+    top: 100%;
+    left: 50%;
+    margin-left: -60px; /* Use half of the width (120/2 = 60), to center the tooltip */
+    visibility: hidden;
+    width: 120px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    padding: 5px;
+    font-size: small;
+    border-radius: 6px;
+
+    /* Position the tooltip text - see examples below! */
+    position: absolute;
+    z-index: 1;
+  }
+
+  /* Show the tooltip text when you mouse over the tooltip container */
+  .tooltip:hover .tooltiptext {
+    visibility: visible;
+  }
+</style>
 
 </html>
